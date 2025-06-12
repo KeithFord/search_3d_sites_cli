@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Check if replacement string is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <search-term>"
+    echo "   or: $0 \"<term1> <term2> <term N>\""
+  exit 1
+fi
+
+# Function to URL-encode a string (macOS-compatible)
+urlencode() {
+  local string="${1}"
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<${#string} ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [a-zA-Z0-9.~_-]) o="$c" ;;
+        *)               printf -v o '%%%02X' "'$c"
+     esac
+     encoded+="$o"
+  done
+  echo "$encoded"
+}
+
+# String to search and replace
+search_string="REPLACE_ME"
+
+# URL-encoded replacement string
+replacement=$(urlencode "$1")
+
+# Array of URLs
+urls=(
+    "https://makerworld.com/en/search/models?keyword=REPLACE_ME"
+    "https://www.thingiverse.com/search?q=REPLACE_ME&page=1"
+    "https://www.printables.com/search/models?ctx=models&q=REPLACE_ME"
+    "https://www.crealitycloud.com/search/model?q=REPLACE_ME"
+    "https://thangs.com/search/REPLACE_ME?scope=all&view=grid"
+    "https://www.stlfinder.com/3dmodels/?search=REPLACE_ME"
+    "https://cults3d.com/en/search?q=REPLACE_ME"
+    "https://www.yeggi.com/q/REPLACE_ME/"
+    "https://nasa3d.arc.nasa.gov/search/REPLACE_ME/model"
+    "https://threedscans.com/?s=REPLACE_ME"
+    "https://3d.si.edu/explore?edan_local=&edan_q=REPLACE_ME&"
+)
+
+# Array to hold updated URLs
+new_urls=()
+
+# Loop and replace
+for url in "${urls[@]}"; do
+  new_url="${url//$search_string/$replacement}"
+  new_urls+=("$new_url")
+done
+
+# Open all URLs in Chrome
+open -a "Google Chrome" "${new_urls[@]}"
